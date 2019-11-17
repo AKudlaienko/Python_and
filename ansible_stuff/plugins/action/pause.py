@@ -1,17 +1,19 @@
+#   ATTENTION !!!
+# This is a modified version of a pause ActionModule: https://docs.ansible.com/ansible/latest/modules/pause_module.html
+# It supports timeout for prompt: 'seconds' with default answer: 'timeout_answer'
+# Minutes option was removed !
+# Other functionality should work as previous.
+#
 # Copyright 2012, Tim Bielawa <tbielawa@redhat.com>
-#
 # This file is part of Ansible
-#
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
 # Ansible is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import (absolute_import, division, print_function)
