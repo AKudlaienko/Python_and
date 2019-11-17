@@ -1,11 +1,10 @@
-#   ATTENTION !!!
+# ATTENTION !!!
 # This is a modified version of a pause ActionModule: https://docs.ansible.com/ansible/latest/modules/pause_module.html
 # It supports timeout for prompt: 'seconds' with default answer: 'timeout_answer'
 # Minutes option was removed !
 # Other functionality should work as previous.
 #
 # Copyright 2012, Tim Bielawa <tbielawa@redhat.com>
-# This file is part of Ansible
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +24,6 @@ import sys
 import termios
 import time
 import tty
-
 from os import isatty
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_text, to_native
@@ -35,6 +33,115 @@ from ansible.plugins.action import ActionBase
 from ansible.utils.display import Display
 from collections import defaultdict
 from ansible.module_utils.basic import AnsibleModule
+
+
+ANSIBLE_METADATA = {'metadata_version': '1.1',
+                    'status': ['preview'],
+                    'supported_by': 'community'}
+
+
+DOCUMENTATION = '''
+---
+module: pause
+short_description: Pause playbook execution
+description:
+  - Pauses playbook execution to get a prompt and continues with 'timeout_answer' if the option was set together with 'seconds' & 'prompt'
+  - Pauses playbook execution for a set amount of time, or until a prompt is acknowledged
+    All parameters are optional. The default behavior is to pause for a certain amount of time.
+  - To pause/wait/sleep per host, use the M(wait_for) module.
+  - You can use C(ctrl+c) if you wish to advance a pause earlier than it is set to expire or if you need to abort a playbook run entirely.
+    To continue early press C(ctrl+c) and then C(c). To abort a playbook press C(ctrl+c) and then C(a).
+  - The pause module integrates into async/parallelized playbooks without any special considerations (see Rolling Updates).
+    When using pauses with the C(serial) playbook parameter (as in rolling updates) you are only prompted once for the current group of hosts.
+  - This module wasn't tested on Windows targets!
+version_added: "0.8"
+options:
+  seconds:
+    description:
+      - A positive number of seconds to pause for.
+  prompt:
+    description:
+      - Optional, text to use for the prompt message.
+  timeout_answer:
+    description:
+      - Optional, text to use for the default prompt message if TimeOut reached. It's usually used together with a 'seconds' option, which defines the TimeOut. 
+  echo:
+    description:
+      - Controls whether or not keyboard input is shown when typing.
+      - Has no effect if 'seconds' or 'minutes' is set.
+    type: bool
+    default: 'yes'
+    version_added: 2.5
+
+author: "Tim Bielawa (@tbielawa)"
+notes:
+      - Starting in 2.2,  if you specify 0 or negative for minutes or seconds, it will wait for 1 second, previously it would wait indefinitely.
+      - This module wasn't tested on Windows targets!
+'''
+
+EXAMPLES = '''
+# Pause until you provide some input, but continues with 'timeout_answer' if timeout in 'seconds' was reached.
+- pause:
+    prompt: 'Provide a version'
+    echo: yes
+    seconds: 60
+    timeout_answer: '1.2.5'
+
+# Pause for 5 minutes to build app cache.
+- pause:
+    seconds: 300
+
+# Pause until you provide some input.
+- pause:
+    prompt: 'Provide a version'
+    echo: yes
+    
+# Pause until you provide some input without printing it out, but continues with 'timeout_answer' if timeout in 'seconds' was reached. 
+# May be useful if you want to input some sensitive data.
+- pause:
+    prompt: 'Provide a version'
+    echo: no
+    seconds: 60
+    timeout_answer: '1.2.5'
+
+# Pause to get some sensitive input.
+- pause:
+    prompt: "Enter a secret"
+    echo: no
+'''
+
+RETURN = '''
+user_input:
+  description: User input from interactive console
+  type: str
+  sample: Example user input
+start:
+  description: Time when started pausing
+  returned: always
+  type: str
+  sample: "2017-02-23 14:35:07.298862"
+stop:
+  description: Time when ended pausing
+  returned: always
+  type: str
+  sample: "2017-02-23 14:35:09.552594"
+delta:
+  description: Time paused in seconds
+  returned: always
+  type: str
+  sample: 2
+stdout:
+  description: Output of pause module
+  returned: always
+  type: str
+  sample: Paused for 0.04 minutes
+echo:
+  description: Value of echo setting
+  returned: always
+  type: bool
+  sample: true
+'''
+
 
 display = Display()
 
@@ -72,13 +179,13 @@ def clear_line(stdout):
 
 
 class ActionModule(ActionBase):
-    ''' pauses execution for a length or time, or until input is received '''
+    """ pauses execution until input is received or for a length or time """
 
     BYPASS_HOST_LOOP = True
     _VALID_ARGS = frozenset(('echo', 'prompt', 'seconds', 'timeout_answer'))
 
     def run(self, tmp=None, task_vars=None):
-        ''' run the pause action module '''
+        """ run the pause action module """
         if task_vars is None:
             task_vars = dict()
 
@@ -101,7 +208,7 @@ class ActionModule(ActionBase):
             echo=None
         ))
 
-        # Should keystrokes be echoed to stdout?
+        """ Should keystrokes be echoed to stdout? """
         if 'echo' in self._task.args:
             try:
                 echo = boolean(self._task.args['echo'])
@@ -133,8 +240,6 @@ class ActionModule(ActionBase):
                 result['failed'] = True
                 result['msg'] = u"non-integer value given for prompt duration:\n%s" % to_text(e)
                 return result
-
-        ########################################################################
 
         start = time.time()
         result['start'] = to_text(datetime.datetime.now())
@@ -232,7 +337,7 @@ class ActionModule(ActionBase):
                             clear_line(stdout)
                             raise KeyboardInterrupt
 
-                    #if not seconds:
+                    """ if not seconds """
                     if stdin_fd is None or not isatty(stdin_fd):
                         display.warning("Not waiting for response to prompt as stdin is not interactive")
                         break
@@ -280,8 +385,6 @@ class ActionModule(ActionBase):
             duration = time.time() - start
             result['stop'] = to_text(datetime.datetime.now())
             result['delta'] = int(duration)
-
-
             duration = round(duration, 2)
             result['stdout'] = "Paused for %s %s" % (duration, duration_unit)
 
