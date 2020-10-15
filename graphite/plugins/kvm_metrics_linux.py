@@ -49,12 +49,13 @@ def get_vm_info():
                               'vm_is_persistent': domain.isPersistent(), 'vm_ram_total_kb': maxmem, 'vm_ram_kb': mem,
                               'vm_cpu_count_total': cpus})
 
-        conn.close()
         HYPERVISOR_SPECS.update({'vm_specs': VMS_SPECS})
 
     except Exception:
         print("Can't get corresponding info.\n".format(traceback.format_exc()))
         sys.exit(3)
+
+    conn.close()
 
 
     for key, value in HYPERVISOR_SPECS.items():

@@ -1,0 +1,88 @@
+<!doctype html>
+<title>Site Maintenance</title>
+<style>
+  body { text-align: center; padding: 150px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; }
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  a { color: #dc8100; text-decoration: none; }
+  a:hover { color: #333; text-decoration: none; }
+
+  body{background: #fff;}
+
+  .parent{
+    display: flex;
+    height: 350px;
+  }
+
+  .gear{
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: auto;
+    background: #198;
+    border-radius: 50%;
+    animation-name: spin;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+
+  .gear .center{
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    z-index: 10;
+    width: 100px;
+    height: 100px;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  .tooth{
+    position: absolute;
+    top: -25px;
+    left: 75px;
+    z-index: 1;
+    width: 45px;
+    height: 250px;
+    background:#198;
+  }
+
+  .tooth:nth-child(2){
+    transform: rotate(45deg);
+  }
+
+  .tooth:nth-child(3){
+    transform: rotate(90deg);
+  }
+
+  .tooth:nth-child(4){
+    transform: rotate(135deg);
+  }
+
+  @keyframes spin {
+    from {transform: rotate(0deg); }
+    to {transform: rotate(360deg);}
+  }
+
+
+
+</style>
+
+<article>
+    <h1>We&rsquo;ll be back soon!</h1>
+    <div>
+        <p>Sorry for the inconvenience but we&rsquo;re performing some maintenance at the moment. If you need to you can always <a href="mailto:somemail@test.com">contact us</a>, otherwise we&rsquo;ll be back online shortly!</p>
+        <p>&mdash; BR X Team</p>
+    </div>
+    <div class="parent">
+        <div class="gear">
+          <div class="center"></div>
+          <div class="tooth"></div>
+          <div class="tooth"></div>
+          <div class="tooth"></div>
+          <div class="tooth"></div>
+        </div>
+      </div>
+</article>
